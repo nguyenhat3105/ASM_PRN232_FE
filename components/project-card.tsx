@@ -1,0 +1,5 @@
+import Link from 'next/link';
+import { FolderKanban, ArrowUpRight } from 'lucide-react';
+import { Project, dateLabel } from '@/lib/types';
+import { Badge } from './ui';
+export function ProjectCard({project:p}:{project:Project}) { const percent=p.taskCount?Math.round(p.completedTaskCount/p.taskCount*100):0; return <Link href={`/projects/${p.projectId}`} className="project-card"><div className="project-card-top"><span className="project-symbol"><FolderKanban size={20}/></span><Badge value={p.status} type="project"/></div><h3>{p.projectName}</h3><p className="description">{p.description||'A fresh start for your next great project.'}</p><div className="card-meta"><span>{p.completedTaskCount} of {p.taskCount} tasks completed</span><span>{percent}%</span></div><div className="progress" aria-label={`${percent}% completed`}><span style={{width:`${percent}%`}}/></div><div className="card-footer"><span>{p.departmentName}</span><span>{p.endDate?dateLabel(p.endDate):'Open-ended'} <ArrowUpRight size={12} style={{display:'inline',marginLeft:4}}/></span></div></Link>; }

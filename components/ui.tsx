@@ -1,0 +1,11 @@
+'use client';
+import { LoaderCircle, AlertCircle, Inbox, RefreshCw, X } from 'lucide-react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { priorities, projectStatuses, taskStatuses, Tag } from '@/lib/types';
+export function Badge({value, type='task'}:{value:number;type?:'task'|'project'|'priority'}) { const labels=type==='priority'?priorities:type==='project'?projectStatuses:taskStatuses; return <span className={`badge ${type}-${value}`}><span/>{labels[value] ?? 'Unknown'}</span>; }
+export function TagChip({tag}:{tag:Tag}) { return <span className="tag-chip"><i style={{backgroundColor:/^#[0-9a-f]{6}$/i.test(tag.color||'')?tag.color!:'#64748b'}}/>{tag.tagName}</span>; }
+export function Loading(){return <div role="status" className="state"><LoaderCircle className="spin"/> Loading your workspace…</div>;}
+export function ErrorState({message,retry}:{message:string;retry?:()=>void}){return <div role="alert" className="state error-state"><AlertCircle/><h3>Something needs attention</h3><p>{message}</p>{retry&&<button className="button secondary" onClick={retry}><RefreshCw size={16}/>Try again</button>}</div>;}
+export function Empty({title='Nothing here yet',description='Create your first item to get started.'}:{title?:string;description?:string}){return <div className="state"><Inbox size={30}/><h3>{title}</h3><p>{description}</p></div>;}
+export function PageHeading({eyebrow,title,description,action}:{eyebrow:string;title:string;description:string;action?:React.ReactNode}){return <div className="page-heading"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p className="muted">{description}</p></div>{action}</div>;}
+export function Modal({open,onOpenChange,title,description,children}:{open:boolean;onOpenChange:(v:boolean)=>void;title:string;description:string;children:React.ReactNode}){return <Dialog.Root open={open} onOpenChange={onOpenChange}><Dialog.Portal><Dialog.Overlay className="modal-overlay"/><Dialog.Content className="modal"><Dialog.Title>{title}</Dialog.Title><Dialog.Description className="muted">{description}</Dialog.Description><Dialog.Close className="modal-close icon-button" aria-label="Close dialog"><X size={20}/></Dialog.Close>{children}</Dialog.Content></Dialog.Portal></Dialog.Root>;}
