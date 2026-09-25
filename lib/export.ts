@@ -1,3 +1,30 @@
-import { Task, taskStatuses, priorities } from './types';
-function cell(value:unknown){let text=String(value??'');if(/^[=+\-@\t\r]/.test(text))text="'"+text;return `"${text.replace(/"/g,'""')}"`;}
-export function exportTasks(tasks:Task[]){const rows=[['ID','Title','Project','Status','Priority','Due date','Tags'],...tasks.map(t=>[t.taskId,t.title,t.projectName,taskStatuses[t.status],priorities[t.priority],t.dueDate,t.tags.map(x=>x.tagName).join(', ')])];const blob=new Blob(['\uFEFF'+rows.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='tasktrack-tasks.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+import { Task, taskStatuses, priorities } from "./types";
+function cell(value: unknown) {
+  let text = String(value ?? "");
+  if (/^[=+\-@\t\r]/.test(text)) text = "'" + text;
+  return `"${text.replace(/"/g, '""')}"`;
+}
+export function exportTasks(tasks: Task[]) {
+  const rows = [
+    ["ID", "Title", "Project", "Status", "Priority", "Due date", "Tags"],
+    ...tasks.map((t) => [
+      t.taskId,
+      t.title,
+      t.projectName,
+      taskStatuses[t.status],
+      priorities[t.priority],
+      t.dueDate,
+      t.tags.map((x) => x.tagName).join(", "),
+    ]),
+  ];
+  const blob = new Blob(
+    ["\uFEFF" + rows.map((row) => row.map(cell).join(",")).join("\r\n")],
+    { type: "text/csv;charset=utf-8;" },
+  );
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "tasktrack-tasks.csv";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

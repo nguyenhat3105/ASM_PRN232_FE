@@ -1,2 +1,4 @@
-import { Calendar } from '@/components/calendar';
-export default function Page(){return <Calendar/>;}
+import { Calendar } from "@/components/calendar";
+export default function Page() {
+  return <Calendar />;
+}

@@ -1,2 +1,4 @@
-import { Management } from '@/components/management';
-export default function Page(){return <Management kind="projects"/>;}
+import { Management } from "@/components/management";
+export default function Page() {
+  return <Management kind="projects" />;
+}

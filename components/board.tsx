@@ -1,13 +1,135 @@
-'use client';
-import Link from 'next/link';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Plus } from 'lucide-react';
-import { api } from '@/lib/api';
-import { useResource } from '@/lib/use-resource';
-import { Task, Project, taskStatuses, dateLabel, overdue } from '@/lib/types';
-import { PageHeading, Badge, Loading, ErrorState, TagChip } from './ui';
-export function Board(){const [project,setProject]=useState(''),[busy,setBusy]=useState(false),[drag,setDrag]=useState<number|null>(null);const tasks=useResource<Task[]>(`/tasks/search?projectId=${project}`),projects=useResource<Project[]>('/projects');
- async function move(task:Task,status:number){if(task.status===status||busy)return;setBusy(true);try{await api(`/tasks/${task.taskId}/status`,{method:'PATCH',body:JSON.stringify({status})});toast.success(`Moved to ${taskStatuses[status]}.`);tasks.reload();}catch(e){toast.error(e instanceof Error?e.message:'Could not move task.');}finally{setBusy(false);setDrag(null);}}
- return <><PageHeading eyebrow="FROM IDEAS TO DONE" title="A little forward motion." description="Drag a task between columns or use its status menu." action={<Link href="/tasks/manage?create=1" className="button"><Plus size={15}/>Create task</Link>}/><div className="toolbar"><select aria-label="Board project" value={project} onChange={e=>setProject(e.target.value)}><option value="">All projects</option>{projects.data?.map(p=><option key={p.projectId} value={p.projectId}>{p.projectName}</option>)}</select><span className="muted">{tasks.data?.length||0} tasks</span></div>{tasks.error?<ErrorState message={tasks.error} retry={tasks.reload}/>:!tasks.data?<Loading/>:<div className="board">{taskStatuses.map((status,index)=><section className={`board-column ${drag===index?'drag-over':''}`} key={status} onDragOver={e=>{e.preventDefault();setDrag(index);}} onDragLeave={()=>setDrag(null)} onDrop={e=>{e.preventDefault();const id=Number(e.dataTransfer.getData('text/plain'));const task=tasks.data?.find(t=>t.taskId===id);setDrag(null);if(task)move(task,index);}}><h2>{status}<span>{tasks.data?.filter(t=>t.status===index).length}</span></h2>{tasks.data?.filter(t=>t.status===index).map(t=><article className="board-card" key={t.taskId} draggable={!busy} onDragStart={e=>e.dataTransfer.setData('text/plain',String(t.taskId))} onDragEnd={()=>setDrag(null)}><Badge value={t.priority} type="priority"/><h3><Link href={`/tasks/${t.taskId}`}>{t.title}</Link></h3><small>{t.projectName}</small><div className="tag-list" style={{margin:'10px 0'}}>{t.tags.map(tag=><TagChip key={tag.tagId} tag={tag}/>)}</div><small className={overdue(t)?'overdue':''}>{dateLabel(t.dueDate)}</small><select aria-label={`Status for ${t.title}`} value={t.status} disabled={busy} onChange={e=>move(t,Number(e.target.value))}>{taskStatuses.map((s,i)=><option value={i} key={s}>{s}</option>)}</select></article>)}</section>)}</div>}</>;
+"use client";
+import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Plus } from "lucide-react";
+import { api } from "@/lib/api";
+import { useResource } from "@/lib/use-resource";
+import { Task, Project, taskStatuses, dateLabel, overdue } from "@/lib/types";
+import { PageHeading, Badge, Loading, ErrorState, TagChip } from "./ui";
+export function Board() {
+  const [project, setProject] = useState(""),
+    [busy, setBusy] = useState(false),
+    [drag, setDrag] = useState<number | null>(null);
+  const tasks = useResource<Task[]>(`/tasks/search?projectId=${project}`),
+    projects = useResource<Project[]>("/projects");
+  async function move(task: Task, status: number) {
+    if (task.status === status || busy) return;
+    setBusy(true);
+    try {
+      await api(`/tasks/${task.taskId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
+      toast.success(`Moved to ${taskStatuses[status]}.`);
+      tasks.reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not move task.");
+    } finally {
+      setBusy(false);
+      setDrag(null);
+    }
+  }
+  return (
+    <>
+      <PageHeading
+        eyebrow="FROM IDEAS TO DONE"
+        title="A little forward motion."
+        description="Drag a task between columns or use its status menu."
+        action={
+          <Link href="/tasks/manage?create=1" className="button">
+            <Plus size={15} />
+            Create task
+          </Link>
+        }
+      />
+      <div className="toolbar">
+        <select
+          aria-label="Board project"
+          value={project}
+          onChange={(e) => setProject(e.target.value)}
+        >
+          <option value="">All projects</option>
+          {projects.data?.map((p) => (
+            <option key={p.projectId} value={p.projectId}>
+              {p.projectName}
+            </option>
+          ))}
+        </select>
+        <span className="muted">{tasks.data?.length || 0} tasks</span>
+      </div>
+      {tasks.error ? (
+        <ErrorState message={tasks.error} retry={tasks.reload} />
+      ) : !tasks.data ? (
+        <Loading />
+      ) : (
+        <div className="board">
+          {taskStatuses.map((status, index) => (
+            <section
+              className={`board-column ${drag === index ? "drag-over" : ""}`}
+              key={status}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDrag(index);
+              }}
+              onDragLeave={() => setDrag(null)}
+              onDrop={(e) => {
+                e.preventDefault();
+                const id = Number(e.dataTransfer.getData("text/plain"));
+                const task = tasks.data?.find((t) => t.taskId === id);
+                setDrag(null);
+                if (task) move(task, index);
+              }}
+            >
+              <h2>
+                {status}
+                <span>
+                  {tasks.data?.filter((t) => t.status === index).length}
+                </span>
+              </h2>
+              {tasks.data
+                ?.filter((t) => t.status === index)
+                .map((t) => (
+                  <article
+                    className="board-card"
+                    key={t.taskId}
+                    draggable={!busy}
+                    onDragStart={(e) =>
+                      e.dataTransfer.setData("text/plain", String(t.taskId))
+                    }
+                    onDragEnd={() => setDrag(null)}
+                  >
+                    <Badge value={t.priority} type="priority" />
+                    <h3>
+                      <Link href={`/tasks/${t.taskId}`}>{t.title}</Link>
+                    </h3>
+                    <small>{t.projectName}</small>
+                    <div className="tag-list" style={{ margin: "10px 0" }}>
+                      {t.tags.map((tag) => (
+                        <TagChip key={tag.tagId} tag={tag} />
+                      ))}
+                    </div>
+                    <small className={overdue(t) ? "overdue" : ""}>
+                      {dateLabel(t.dueDate)}
+                    </small>
+                    <select
+                      aria-label={`Status for ${t.title}`}
+                      value={t.status}
+                      disabled={busy}
+                      onChange={(e) => move(t, Number(e.target.value))}
+                    >
+                      {taskStatuses.map((s, i) => (
+                        <option value={i} key={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </article>
+                ))}
+            </section>
+          ))}
+        </div>
+      )}
+    </>
+  );
 }
