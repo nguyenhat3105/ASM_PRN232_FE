@@ -5,9 +5,7 @@ test("dashboard loads real API data and all public views work", async ({
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
-  await expect(
-    page.getByRole("heading", { name: "Room for great work." }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Portal Redesign", exact: true }),
   ).toBeVisible();
@@ -63,9 +61,7 @@ test("management has accessible modal and required fields", async ({
 test("mobile navigation and layout remain usable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(
-    page.getByRole("heading", { name: "Room for great work." }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,

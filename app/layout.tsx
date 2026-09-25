@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { Shell } from "@/components/shell";
 import "./globals.css";
+import "./atlas.css";
 export const metadata: Metadata = {
   title: { default: "TaskTrack — Team workspace", template: "%s | TaskTrack" },
   description: "A clearer view of your projects, people and priorities.",

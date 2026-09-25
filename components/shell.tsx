@@ -16,10 +16,12 @@ import {
   ArrowUpRight,
   Layers,
   ChartNoAxesCombined,
+  Plus,
+  ChevronDown,
 } from "lucide-react";
 const sections = [
   {
-    title: "WORKSPACE",
+    title: "Dashboard",
     links: [
       ["/", "Overview", LayoutDashboard],
       ["/departments", "Departments", Building2],
@@ -30,7 +32,7 @@ const sections = [
     ],
   },
   {
-    title: "MANAGE",
+    title: "Workspace",
     links: [
       ["/projects/manage", "Projects", FolderKanban],
       ["/tasks/manage", "Tasks", ListTodo],
@@ -63,7 +65,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <span className="brand-icon">
             <Layers size={22} />
           </span>
-          tasktrack<span className="brand-dot">.</span>
+          TaskTrack
         </Link>
         <button
           className="mobile-close icon-button"
@@ -98,20 +100,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </nav>
         ))}
         <div className="sidebar-footer">
-          <div className="tiny-label">A LITTLE FOCUS GOES A LONG WAY</div>
+          <div className="tiny-label">YOUR WORKSPACE</div>
           <p>
-            One task at a time.
+            Everything you need.
             <br />
-            One step forward.
+            One place to focus.
           </p>
-          <Link href="/tasks/manage">
-            Create something <ArrowUpRight size={15} />
+          <Link href="/reports">
+            Workspace insights <ArrowUpRight size={15} />
           </Link>
         </div>
       </aside>
       <div className="main-shell">
         <header className="topbar">
-          <span>
+          <span className="topbar-breadcrumb">
             Workspace <span className="breadcrumb-divider">/</span>{" "}
             <strong>
               {pathname === "/"
@@ -119,11 +121,34 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 : pathname.split("/")[1]?.replace(/^./, (c) => c.toUpperCase())}
             </strong>
           </span>
+          <form className="global-search" action="/search">
+            <Search size={16} />
+            <input
+              name="title"
+              aria-label="Search workspace"
+              placeholder="Search anything…"
+            />
+            <kbd>↵</kbd>
+          </form>
           <div className="topbar-right">
+            <Link
+              className="button secondary topbar-create"
+              href="/tasks/manage?create=1"
+            >
+              <Plus size={15} />
+              Create new
+            </Link>
             <span className="public-pill">
               <span className="online-dot" /> Public workspace
             </span>
-            <span className="avatar">TT</span>
+            <Link href="/departments" className="workspace-profile">
+              <span className="avatar">TT</span>
+              <span>
+                <strong>Team workspace</strong>
+                <small>Public workspace</small>
+              </span>
+              <ChevronDown size={14} />
+            </Link>
           </div>
         </header>
         <main>{children}</main>
