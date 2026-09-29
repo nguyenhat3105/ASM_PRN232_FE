@@ -1,4 +1,6 @@
-# TaskTrack frontend
+# QE190017_SE19B.NET_Ass1_FE
+
+Student: QE190017 · Class: SE19B.NET
 
 Next.js App Router and TypeScript frontend for TaskTrack. All persistent application data comes from the ASP.NET Core API.
 

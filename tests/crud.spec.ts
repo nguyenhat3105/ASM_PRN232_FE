@@ -26,8 +26,9 @@ test("task creation, editing, soft deletion and recovery use real PostgreSQL", a
   const row = page.getByRole("row").filter({ hasText: title });
   await expect(row.getByText("Low", { exact: true })).toBeVisible();
   await page
-    .getByRole("button", { name: `Edit ${title}`, exact: true })
+    .getByRole("button", { name: `Actions for ${title}`, exact: true })
     .click();
+  await page.getByRole("menuitem", { name: "Edit", exact: true }).click();
   await page.getByLabel("frontend", { exact: true }).uncheck();
   await page.getByLabel("backend", { exact: true }).check();
   await page.getByLabel("Status", { exact: true }).selectOption("1");
@@ -35,8 +36,9 @@ test("task creation, editing, soft deletion and recovery use real PostgreSQL", a
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(row.getByText("In Progress", { exact: true })).toBeVisible();
   await page
-    .getByRole("button", { name: `Delete ${title}`, exact: true })
+    .getByRole("button", { name: `Actions for ${title}`, exact: true })
     .click();
+  await page.getByRole("menuitem", { name: "Delete", exact: true }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page
     .getByRole("button", { name: "Confirm delete", exact: true })
