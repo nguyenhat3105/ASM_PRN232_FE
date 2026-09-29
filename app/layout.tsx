@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { Shell } from "@/components/shell";
 import "./globals.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
 import "./atlas.css";
 export const metadata: Metadata = {
   title: { default: "TaskTrack — Team workspace", template: "%s | TaskTrack" },
@@ -18,9 +22,7 @@ export default function RootLayout({
         <a className="skip-link" href="#page-content">
           Skip to content
         </a>
-        <Shell>
-          <div id="page-content">{children}</div>
-        </Shell>
+        <Shell>{children}</Shell>
         <Toaster position="bottom-right" richColors closeButton />
       </body>
     </html>

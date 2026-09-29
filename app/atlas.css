@@ -1,718 +1,330 @@
-/* Atlas-inspired visual system. Business logic and database remain unchanged. */
-:root {
-  --bg: #fafbfe;
-  --text: #17191f;
-  --muted: #737986;
-  --line: #e7e9ee;
-  --accent: #2856df;
-  --accent-soft: #eef3ff;
-  --danger: #bd3e4a;
-}
-body {
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
-  font-size: 13px;
-  -webkit-font-smoothing: antialiased;
-  background: var(--bg);
-}
-h1 {
-  font-size: 29px;
-  letter-spacing: -1px;
-  font-weight: 600;
-}
-h2 {
-  font-size: 16px;
-  font-weight: 600;
-}
-h3 {
-  font-size: 14px;
-}
+/*
+  atlas.css — TaskTrack Atlas design layer
+  Loaded after globals.css; overrides and extends base styles.
+  All visual refinements specific to the Atlas aesthetic live here.
+*/
+
+/* ────────────────────────────────────────────────────
+   SIDEBAR REFINEMENTS
+──────────────────────────────────────────────────── */
 .sidebar {
-  width: 222px;
-  padding: 27px 18px;
-  border-right-color: #e4e7ef;
+  background: #ffffff;
 }
-.main-shell {
-  margin-left: 222px;
+
+/* Subtle scrollbar in sidebar */
+.sidebar::-webkit-scrollbar {
+  width: 4px;
 }
-.brand {
-  color: #2856df;
-  font-size: 24px;
-  letter-spacing: -1px;
-  gap: 9px;
-  margin-bottom: 26px;
-}
-.brand-icon {
+.sidebar::-webkit-scrollbar-track {
   background: transparent;
-  color: #2856df;
-  width: 27px;
-  height: 30px;
 }
-.brand-icon svg {
-  width: 28px;
-  height: 28px;
+.sidebar::-webkit-scrollbar-thumb {
+  background: #e0e6f0;
+  border-radius: 4px;
 }
-.workspace-label {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 11px 9px;
-  margin-bottom: 25px;
+
+/* ────────────────────────────────────────────────────
+   TOPBAR REFINEMENTS
+──────────────────────────────────────────────────── */
+.topbar {
+  background: #ffffff;
 }
-.workspace-avatar {
-  background: #eef3ff;
-  border-color: #dde6ff;
-  color: #345bd1;
+
+/* ────────────────────────────────────────────────────
+   DASHBOARD: OVERVIEW SECTIONS
+──────────────────────────────────────────────────── */
+
+/* Departement-level overview with key metric at top */
+.overview-intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
 }
-.workspace-label small {
-  font-size: 9px;
+
+/* Inline metric emphasis (e.g. "42 tasks open") */
+.metric-emphasis {
+  font-size: 13px;
+  color: var(--muted);
 }
-.nav-heading {
-  letter-spacing: 0;
-  text-transform: none;
-  color: #262b36;
-  font-size: 12px;
-  margin: 0 8px 9px;
+
+.metric-emphasis b {
+  color: var(--text);
   font-weight: 600;
 }
-.nav-link {
+
+/* ────────────────────────────────────────────────────
+   PROJECT CARD (atlas variant)
+──────────────────────────────────────────────────── */
+.project-card:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--atlas-blue-soft);
+}
+
+/* ────────────────────────────────────────────────────
+   PANEL HEADING LINK / ICON BUTTON
+──────────────────────────────────────────────────── */
+.panel-heading > a,
+.panel-heading > button.icon-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
-  padding: 10px 12px;
+  color: #7888a2;
   border-radius: 5px;
-  color: #67707d;
-  margin: 3px 0;
+  padding: 4px 5px;
 }
-.nav-link svg {
-  width: 16px;
-  height: 16px;
-  stroke-width: 1.6;
+
+.panel-heading > a:hover,
+.panel-heading > button.icon-link:hover {
+  background: #f0f4fc;
+  color: var(--accent);
 }
-.nav-link.active {
-  background: #eef3ff;
-  border-right: 2px solid var(--accent);
-  color: #2856df;
-}
-.active-dot {
-  display: none;
-}
-.sidebar nav {
-  margin-bottom: 25px;
-}
-.sidebar-footer p {
-  font-size: 12px;
-  color: #717887;
-}
-.sidebar-footer a {
+
+/* ────────────────────────────────────────────────────
+   KANBAN — STATUS CHANGE SELECT (accessible, subtle)
+──────────────────────────────────────────────────── */
+.board-status-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #f3f6fc;
+  border: 1px solid #e0e8f5;
+  border-radius: 5px;
   font-size: 11px;
-}
-.sidebar-footer .tiny-label {
-  font-size: 8px;
-}
-.topbar {
-  height: 72px;
-  padding: 0 30px;
-  background: white;
-  gap: 22px;
-}
-.topbar-breadcrumb {
-  display: none;
-}
-.global-search {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  width: 285px;
-  padding: 0 10px;
-  color: #888e9b;
-}
-.global-search input:not([type="checkbox"]):not([type="color"]) {
-  border: 0;
-  background: transparent;
-  min-width: 0;
-  min-height: 34px;
-  padding: 5px 0;
-  flex: 1;
-  font-size: 11px;
-  outline: none;
-}
-.global-search:focus-within {
-  border-color: #6285ef;
-  box-shadow: 0 0 0 3px #2856df12;
-}
-.global-search kbd {
-  font-size: 11px;
-  color: #9299a5;
-}
-.topbar-right {
-  margin-left: auto;
-  gap: 21px;
-}
-.topbar-create {
-  min-height: 32px !important;
-  padding: 6px 11px !important;
-  border-color: #b9cbff !important;
-  color: #2856df !important;
-}
-.public-pill {
-  display: none;
-}
-.workspace-profile {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 11px;
-}
-.workspace-profile strong {
-  color: #343942;
+  color: #566076;
+  padding: 4px 8px;
+  margin-top: 10px;
+  width: 100%;
+  cursor: pointer;
   font-weight: 500;
 }
-.workspace-profile small {
-  color: #8a909a;
-  font-size: 9px;
+
+.board-status-select:focus {
+  outline: 2px solid #c8d5fa;
+  border-color: #7997e9;
 }
-.avatar {
-  background: #e7edfc;
-  border-color: #d9e2f5;
-  color: #3e5b99;
-  width: 30px;
-  height: 30px;
-}
-.workspace-profile > svg {
-  margin-left: 8px;
-  color: #8e96a1;
-}
-main {
-  padding: 29px 30px;
-  max-width: 1650px;
-}
-.page-heading {
-  margin-bottom: 23px;
-  align-items: center;
-}
-.eyebrow {
-  font-size: 9px;
-  letter-spacing: 1.25px;
-  color: #7d8798;
-  margin-bottom: 8px;
-}
-.muted {
-  font-size: 12px;
-}
-.button {
-  border-radius: 6px;
-  min-height: 36px;
-  padding: 8px 13px;
-  font-size: 11px;
-  font-weight: 500;
-  background: #2856df;
-  box-shadow: 0 1px 2px #15285c08;
-}
-.button.secondary {
-  border-color: #e1e5ed;
-  color: #575f6d;
-}
-.button:focus-visible,
-.icon-button:focus-visible,
-a:focus-visible {
-  outline: 2px solid #6689f5;
-}
-.button.danger {
-  background: var(--danger);
-}
-.stats-grid {
-  gap: 15px;
-  margin-bottom: 22px;
-}
-.stat-card {
-  border: 1px solid #b9cafa;
-  border-radius: 7px;
-  padding: 17px 18px;
-  background: linear-gradient(180deg, #f4f7ff 0, #fff 75%);
-  box-shadow: 0 2px 5px #20395b03;
-}
-.stat-top {
-  font-size: 11px;
-  color: #4f6dbc;
-  margin-bottom: 12px;
-}
-.stat-icon {
-  background: transparent;
-  color: #687285;
-  padding: 0;
-}
-.stat-value {
-  font-size: 30px;
-  font-weight: 500;
-  color: #1c2230;
-}
-.stat-bottom {
-  font-size: 10px;
-  margin-top: 8px;
-  color: #89909c;
-}
-.panel {
-  border-radius: 8px;
-  border-color: #e3e7ed;
-  box-shadow: 0 2px 3px #14214902;
-}
-.panel-heading {
-  padding: 17px 19px;
-}
-.panel-heading h2 {
-  font-size: 14px;
-}
-.panel-heading a {
-  font-size: 10px;
-  color: #526ec5;
-}
-.section-heading {
-  margin: 23px 0 15px;
-}
-.section-heading a {
-  font-size: 11px;
-}
-.count-label {
-  font-size: 10px;
-  background: #f0f3fc;
-  color: #6473a4;
-  padding: 2px 5px;
-  border-radius: 4px;
-}
-.project-card {
-  padding: 20px;
-  border-radius: 8px;
-}
-.project-card .description {
-  font-size: 11px;
-}
-.project-symbol {
-  background: #eef3ff;
-  color: #456ddd;
-  border-radius: 7px;
-  width: 34px;
-  height: 34px;
-}
-.progress {
-  height: 4px;
-  background: #edf0f5;
-}
-.progress > span {
-  background: #3562e5;
-}
-.card-footer {
-  font-size: 10px;
-}
-.badge {
-  font-size: 9px;
-  font-weight: 500;
-  border-radius: 4px;
-  padding: 3px 6px;
-}
-.task-1,
-.project-1 {
-  color: #315bd7;
-  background: #edf2ff;
-}
-.task-2,
-.project-2 {
-  color: #188574;
-  background: #eaf7f3;
-}
-.task-3 {
-  background: #f2f2f5;
-  color: #777d89;
-}
+
+/* ────────────────────────────────────────────────────
+   PRIORITY BADGE ENHANCEMENTS
+──────────────────────────────────────────────────── */
 .priority-3 {
-  background: #fff0f1;
-  color: #ca5461;
+  background: #fff0f0;
+  color: #b03048;
 }
-.tag-chip {
-  background: #f7f9fc;
-  border-color: #e7ebf3;
-  color: #596273;
-  font-size: 10px;
-  border-radius: 4px;
-  padding: 3px 7px;
-}
-.tag-chip i {
-  width: 6px;
-  height: 6px;
-}
-.toolbar {
-  background: #fff;
+
+/* ────────────────────────────────────────────────────
+   DEPARTMENT DETAIL: DEPARTMENT INFO HEADER PANEL
+──────────────────────────────────────────────────── */
+.dept-header-panel {
+  background: white;
   border: 1px solid var(--line);
-  padding: 12px;
-  border-radius: 8px;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.toolbar input:not([type="checkbox"]):not([type="color"]),
-.toolbar select {
-  background: #fbfcfe;
-  border-color: #e7eaf1;
-  min-height: 35px;
-  font-size: 11px;
-}
-.toolbar > svg {
-  margin-left: 4px;
-}
-.table-wrap th {
-  background: #f8faff;
-  color: #788291;
-  font-size: 9px;
-  padding: 13px 19px;
-  letter-spacing: 0.5px;
-}
-.table-wrap td {
-  padding: 16px 19px;
-  font-size: 12px;
-}
-.table-wrap tbody tr:hover {
-  background: #fafbff;
-}
-.table-subtitle {
-  font-size: 10px;
-}
-.actions {
-  gap: 5px;
-}
-.actions .icon-button {
-  border: 1px solid #e8ecf3;
-  border-radius: 5px;
-  padding: 6px;
-  color: #838c9b;
-  background: white;
-}
-.actions .icon-button:hover {
-  color: #2856df;
-  border-color: #becff8;
-  background: #f3f6ff;
-}
-.pagination {
-  padding: 13px 19px;
-  font-size: 10px;
-}
-.pagination .button {
-  min-height: 30px;
-  padding: 5px 10px;
-}
-.modal {
-  border: 1px solid #dfe5f1;
-  border-radius: 12px;
-  box-shadow: 0 25px 90px #1a2e5730;
-}
-.modal-overlay {
-  background: #17254355;
-}
-.field {
-  font-size: 11px;
-  gap: 7px;
-}
-.field input:focus,
-.field textarea:focus,
-.field select:focus {
-  outline: 2px solid #c7d5ff;
-  border-color: #6d8de4;
-}
-.checkbox-list label:has(input:checked) {
-  border-color: #9eb9ff;
-  background: #f0f5ff;
-  color: #315dd1;
-}
-input[type="checkbox"] {
-  accent-color: #2856df;
-}
-.board-column {
-  background: #f3f5fa;
-  border-color: #e6eaf2;
-}
-.board-column h2 {
-  font-size: 12px;
-}
-.board-card {
-  border-radius: 7px;
-  border-color: #e1e6f0;
-  box-shadow: 0 2px 3px #1a2e5003;
-}
-.board-column.drag-over {
-  outline-color: #567de5;
-}
-.calendar-task {
-  background: #eff3ff;
-  color: #4564b6;
-}
-.calendar-task.late {
-  background: #fff0f1;
-  color: #b45b66;
-}
-.calendar-day.today > span {
-  background: #2856df;
-}
-.page-footer {
-  padding: 16px 30px;
-  font-size: 9px;
-  background: white;
-}
-.detail-body {
-  padding: 21px;
-}
-.department-card {
-  border-radius: 8px;
-}
-.department-card h2 {
-  font-size: 17px;
-}
-.icon-button:hover {
-  background: #f0f4ff;
-  color: #2856df;
-}
-.atlas-overview-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(260px, 1fr);
-  gap: 18px;
-}
-.atlas-project-row {
-  display: grid;
-  grid-template-columns: minmax(150px, 1fr) 115px 75px;
+  border-radius: 11px;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
   gap: 16px;
-  align-items: center;
-  padding: 17px 19px;
-  border-bottom: 1px solid #edf0f5;
 }
-.atlas-project-row:last-child {
-  border: 0;
-}
-.atlas-project-row h3 {
-  font-size: 12px;
-  margin: 0 0 3px;
-}
-.atlas-project-row small {
-  font-size: 10px;
-  color: #8a909b;
-}
-.atlas-progress-label {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 9px;
-  color: #737c8b;
-}
-.atlas-progress-label .progress {
-  flex: 1;
-  margin: 0;
-}
-.atlas-deadline {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 12px 18px;
-  border-bottom: 1px solid #eff1f5;
-}
-.atlas-deadline:last-child {
-  border: 0;
-}
-.date-tile {
-  background: #2c58db;
-  border-radius: 5px;
-  width: 39px;
-  min-width: 39px;
-  text-align: center;
-  color: white;
-  padding: 6px 3px;
-  font-size: 8px;
-  line-height: 1.3;
-}
-.date-tile strong {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-}
-.atlas-deadline > a {
-  font-size: 11px;
-  line-height: 1.5;
-}
-.atlas-deadline small {
-  font-size: 9px;
-  color: #8b94a1;
-}
-.atlas-bottom-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(260px, 1fr);
-  gap: 18px;
-  margin-top: 18px;
-}
-.atlas-chart {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 22px;
-}
-.task-donut {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
+
+.dept-header-icon {
+  background: #edf2ff;
+  color: var(--atlas-blue-secondary);
+  border-radius: 10px;
+  width: 46px;
+  height: 46px;
   display: grid;
   place-items: center;
-  position: relative;
+  flex-shrink: 0;
 }
-.task-donut:before {
-  content: "";
-  position: absolute;
-  inset: 11px;
-  border-radius: 50%;
+
+.dept-header-text h2 {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.dept-header-text p {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ────────────────────────────────────────────────────
+   PROJECT DETAIL: QUICK STATS ROW
+──────────────────────────────────────────────────── */
+.project-stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.project-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #506079;
+  flex: 1;
+  min-width: 120px;
 }
-.donut-label {
-  position: relative;
-  text-align: center;
-  line-height: 1.3;
+
+.project-stat-pill b {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
 }
-.donut-label strong {
-  display: block;
-  font-size: 32px;
-  font-weight: 500;
+
+.project-stat-pill svg {
+  color: #8a9ab8;
 }
-.donut-label span {
-  font-size: 10px;
-  color: #8b93a1;
+
+/* ────────────────────────────────────────────────────
+   SEARCH PAGE: RESULT SUMMARY BAR
+──────────────────────────────────────────────────── */
+.search-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  color: #6a7890;
+  background: #f8faff;
 }
-.chart-legend {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 25px;
-  margin-top: 24px;
-  width: 100%;
-  font-size: 10px;
-  color: #7c8593;
+
+.search-summary b {
+  color: var(--text);
+  font-weight: 600;
 }
-.chart-legend > div {
+
+/* ────────────────────────────────────────────────────
+   MANAGEMENT: TABLE HEADER AREA
+──────────────────────────────────────────────────── */
+.mgmt-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* ────────────────────────────────────────────────────
+   TRASH / SOFT-DELETE NOTICE
+──────────────────────────────────────────────────── */
+.notice {
+  border-left: 3px solid var(--atlas-blue-soft);
+  background: #f4f8ff;
+  border-right: 0;
+  border-top: 0;
+  border-bottom: 0;
+  border-radius: 0 7px 7px 0;
+}
+
+/* ────────────────────────────────────────────────────
+   FORM: MODAL IMPROVEMENTS
+──────────────────────────────────────────────────── */
+
+/* Make color input consistent */
+input[type="color"] {
+  width: 42px;
+  height: 38px;
+  padding: 2px 4px;
+  border: 1px solid #dfe4ec;
+  border-radius: 7px;
+  background: white;
+  cursor: pointer;
+}
+
+/* Align color + text in tag form */
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ────────────────────────────────────────────────────
+   DETAIL VIEW: BREADCRUMB
+──────────────────────────────────────────────────── */
+.breadcrumb {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
 }
-.chart-legend i {
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
+
+.breadcrumb a {
+  color: var(--muted);
 }
-.chart-legend strong {
-  margin-left: auto;
-  color: #343c4b;
+
+.breadcrumb a:hover {
+  color: var(--accent);
+}
+
+.breadcrumb-sep {
+  color: #c5ccd9;
+  font-size: 14px;
+}
+
+.breadcrumb-current {
+  color: var(--text);
   font-weight: 500;
 }
-@media (max-width: 1150px) {
-  .sidebar {
-    width: 200px;
-    padding: 25px 15px;
-  }
-  .main-shell {
-    margin-left: 200px;
-  }
-  .atlas-overview-grid,
-  .atlas-bottom-grid {
-    grid-template-columns: 1fr;
-  }
-  .atlas-project-row {
-    grid-template-columns: minmax(140px, 1fr) 140px 80px;
-  }
-  .workspace-profile > span:not(.avatar),
-  .workspace-profile > svg {
-    display: none;
-  }
-  .global-search {
-    width: 240px;
-  }
-}
-@media (max-width: 760px) {
-  .sidebar {
-    width: 222px;
-  }
-  .main-shell {
-    margin-left: 0;
-  }
-  .topbar {
-    padding: 0 16px 0 50px;
-    height: 65px;
-    gap: 12px;
-  }
-  .topbar-right {
-    gap: 8px;
-  }
-  .global-search {
-    width: auto;
-    flex: 1;
-    min-width: 0;
-  }
-  .topbar-create {
-    display: none !important;
-  }
-  .workspace-profile {
-    flex-shrink: 0;
-  }
-  .mobile-menu {
-    top: 18px;
-  }
-  .global-search input:not([type="checkbox"]):not([type="color"]) {
-    width: 100%;
-    font-size: 10px;
-  }
-  .global-search kbd {
-    display: none;
-  }
-  main {
-    padding: 23px 16px;
-  }
-  .page-heading {
-    align-items: flex-start;
-  }
-  h1 {
-    font-size: 26px;
-  }
-  .stats-grid {
+
+/* ────────────────────────────────────────────────────
+   RESPONSIVE OVERRIDES (atlas-specific)
+──────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .project-stats-row {
     gap: 10px;
   }
-  .stat-card {
-    padding: 15px;
+}
+
+@media (max-width: 760px) {
+  .dept-header-panel {
+    padding: 18px;
+    gap: 12px;
   }
-  .stat-top {
-    font-size: 10px;
+
+  .dept-header-icon {
+    width: 38px;
+    height: 38px;
   }
-  .atlas-project-row {
-    grid-template-columns: minmax(90px, 1fr) 65px 65px;
-    padding: 14px 12px;
-    gap: 9px;
+
+  .dept-header-text h2 {
+    font-size: 16px;
   }
-  .atlas-project-row h3 {
-    font-size: 11px;
+
+  .project-stats-row {
+    gap: 8px;
   }
-  .atlas-project-row small {
-    font-size: 9px;
+
+  .project-stat-pill {
+    padding: 9px 12px;
+    font-size: 12px;
   }
-  .atlas-progress-label {
-    gap: 4px;
+
+  .project-stat-pill b {
+    font-size: 16px;
   }
-  .atlas-bottom-grid .table-wrap {
-    max-width: calc(100vw - 34px);
-  }
-  .toolbar {
-    padding: 10px;
-  }
-  .page-footer {
-    padding: 15px 16px;
-  }
-  .workspace-label {
-    margin-top: 6px;
-  }
-  .chart-legend {
-    max-width: 280px;
+
+  .atlas-project-row:hover {
+    background: transparent;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *:before,
-  *:after {
-    scroll-behavior: auto !important;
-    transition: none !important;
-    animation: none !important;
-  }
-}
+
+.welcome-banner { background: #eef2ff; border: 1px solid #dce4f8; border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+.welcome-banner h2 { font-size: 20px; margin: 0 0 6px; color: var(--text); }
+.welcome-banner p { margin: 0; color: var(--muted); }
+.dashboard-project-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 16px; }
+.dashboard-project-cards .project-card { min-width: 0; }
+@media (max-width: 1000px) { .dashboard-project-cards { grid-template-columns: minmax(0, 1fr); } }

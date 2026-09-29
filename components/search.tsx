@@ -1,6 +1,6 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Download, SlidersHorizontal, X } from "lucide-react";
 import { useResource } from "@/lib/use-resource";
 import { Task, Tag, Project, taskStatuses, priorities } from "@/lib/types";
@@ -16,7 +16,6 @@ export function SearchPage() {
 }
 function SearchContent() {
   const params = useSearchParams();
-  const router = useRouter();
   const [title, setTitle] = useState(params.get("title") || "");
   const [sort, setSort] = useState("priority");
   const [page, setPage] = useState(1);
@@ -24,25 +23,24 @@ function SearchContent() {
     tags = useResource<Tag[]>("/tags");
   const query = params.toString();
   const tasks = useResource<Task[]>(`/tasks/search?${query}`);
-  useEffect(() => {
-    setTitle(params.get("title") || "");
-    setPage(1);
-  }, [params]);
+  const urlTitle = params.get("title") || "";
+  useEffect(() => { setTitle(urlTitle); }, [urlTitle]);
+  useEffect(() => { setPage(1); }, [query]);
   useEffect(() => {
     const timer = setTimeout(() => {
       if (title === (params.get("title") || "")) return;
-      const next = new URLSearchParams(params.toString());
+      const next = new URLSearchParams(window.location.search);
       if (title) next.set("title", title);
       else next.delete("title");
-      router.replace(`/search?${next.toString()}`, { scroll: false });
+      window.history.replaceState(null, "", `/search?${next.toString()}`);
     }, 350);
     return () => clearTimeout(timer);
-  }, [title, params, router]);
+  }, [title, params]);
   function filter(key: string, value: string) {
-    const next = new URLSearchParams(params.toString());
+    const next = new URLSearchParams(window.location.search);
     if (value) next.set(key, value);
     else next.delete(key);
-    router.replace(`/search?${next}`, { scroll: false });
+    window.history.replaceState(null, "", `/search?${next}`);
     setPage(1);
   }
   const filtered = [...(tasks.data || [])].sort((a, b) =>
@@ -59,22 +57,22 @@ function SearchContent() {
   return (
     <>
       <PageHeading
-        eyebrow="FIND YOUR NEXT FOCUS"
-        title="All tasks"
-        description="A little clarity for everything on your list."
+        eyebrow="SEARCH"
+        title="Search"
+        description="Find tasks across your workspace."
         action={
           <button
             className="button secondary"
             disabled={!filtered.length || tasks.loading || !!tasks.error}
             onClick={() => exportTasks(filtered)}
           >
-            <Download size={15} />
+            <Download size={14} />
             Export CSV
           </button>
         }
       />
       <div className="toolbar">
-        <SlidersHorizontal size={17} />
+        <SlidersHorizontal size={15} strokeWidth={1.8} style={{ color: "#9aabbb" }} />
         <input
           aria-label="Search task title"
           placeholder="Search tasks by title…"
@@ -154,7 +152,7 @@ function SearchContent() {
             className="button secondary"
             onClick={() => {
               setTitle("");
-              router.replace("/search");
+              window.history.replaceState(null, "", "/search");
             }}
           >
             <X size={14} />

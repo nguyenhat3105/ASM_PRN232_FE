@@ -1,6 +1,6 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   Plus,
@@ -11,6 +11,9 @@ import {
   LoaderCircle,
   RotateCcw,
   Copy,
+  MoreHorizontal,
+  Columns3,
+  List,
 } from "lucide-react";
 import { toast } from "sonner";
 import { api, ApiError } from "@/lib/api";
@@ -37,6 +40,15 @@ import {
   Empty,
   Modal,
 } from "./ui";
+import { TaskKanban } from "./task-kanban";
+import { Tabs, TabsList, TabsTrigger } from "@/components/primitives/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/primitives/dropdown-menu";
 type Draft = {
   departmentName: string;
   departmentDescription: string;
@@ -98,6 +110,14 @@ export function Management({ kind }: { kind: Kind }) {
 }
 function ManagementContent({ kind }: { kind: Kind }) {
   const [trash, setTrash] = useState(false);
+  const [view, setView] = useState("list");
+  const [filters, setFilters] = useState({
+    status: "",
+    priority: "",
+    projectId: "",
+    tagId: "",
+    departmentId: "",
+  });
   const resource = useResource<Entity[]>(
     kind === "tasks" && trash ? "/tasks/trash" : `/${kind}`,
   );
@@ -114,6 +134,8 @@ function ManagementContent({ kind }: { kind: Kind }) {
     [deleting, setDeleting] = useState<Entity | null>(null),
     [handled, setHandled] = useState(false);
   const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   function begin(item: Entity | null) {
     setEditing(item);
     setErrors({});
@@ -130,7 +152,12 @@ function ManagementContent({ kind }: { kind: Kind }) {
             tagIDs: "tags" in item ? item.tags.map((t) => t.tagId) : [],
             color: "color" in item ? item.color || "" : "",
           }
-        : { ...initial, startDate: today() },
+        : {
+            ...initial,
+            startDate: today(),
+            projectId: params.get("projectId") || "",
+            departmentId: params.get("departmentId") || "",
+          },
     );
     setOpen(true);
   }
@@ -144,15 +171,21 @@ function ManagementContent({ kind }: { kind: Kind }) {
     }));
   }
   useEffect(() => {
+    if (!params.get("create") && !params.get("edit")) {
+      setHandled(false);
+      return;
+    }
     if (handled || !resource.data) return;
     const edit = params.get("edit");
     if (edit) {
       const item = resource.data.find((e) => idOf(kind, e) === Number(edit));
       if (item) begin(item);
       setHandled(true);
+      router.replace(pathname, { scroll: false });
     } else if (params.get("create") === "1") {
       begin(null);
       setHandled(true);
+      router.replace(pathname, { scroll: false });
     }
   }, [params, resource.data, handled, kind]);
   const set = (key: keyof Draft, value: string | number[]) =>
@@ -176,6 +209,9 @@ function ManagementContent({ kind }: { kind: Kind }) {
       {label}
       {options.area ? (
         <textarea
+          aria-label={label}
+          aria-invalid={!!fieldError(key)}
+          aria-describedby={fieldError(key) ? `error-${key}` : undefined}
           value={String(draft[key])}
           onChange={(e) => set(key, e.target.value)}
           required={options.required}
@@ -183,6 +219,9 @@ function ManagementContent({ kind }: { kind: Kind }) {
         />
       ) : (
         <input
+          aria-label={label}
+          aria-invalid={!!fieldError(key)}
+          aria-describedby={fieldError(key) ? `error-${key}` : undefined}
           type={options.type || "text"}
           value={String(draft[key])}
           onChange={(e) => set(key, e.target.value)}
@@ -190,7 +229,9 @@ function ManagementContent({ kind }: { kind: Kind }) {
           maxLength={options.max}
         />
       )}
-      <span className="field-error">{fieldError(key)?.join(" ")}</span>
+      <span id={`error-${key}`} className="field-error">
+        {fieldError(key)?.join(" ")}
+      </span>
     </label>
   );
   const select = (
@@ -203,6 +244,8 @@ function ManagementContent({ kind }: { kind: Kind }) {
       {label}
       <select
         aria-label={label}
+        aria-invalid={!!fieldError(key)}
+        aria-describedby={fieldError(key) ? `error-${key}` : undefined}
         required
         value={String(draft[key])}
         onChange={(e) => set(key, e.target.value)}
@@ -214,7 +257,9 @@ function ManagementContent({ kind }: { kind: Kind }) {
           </option>
         ))}
       </select>
-      <span className="field-error">{fieldError(key)?.join(" ")}</span>
+      <span id={`error-${key}`} className="field-error">
+        {fieldError(key)?.join(" ")}
+      </span>
     </label>
   );
   const enums = (values: string[]) =>
@@ -234,6 +279,12 @@ function ManagementContent({ kind }: { kind: Kind }) {
     if (!draft[key].trim()) validation[key] = ["This field is required."];
     if (kind === "departments" && !draft.departmentDescription.trim())
       validation.departmentDescription = ["Description is required."];
+    if (kind === "projects" && !draft.departmentId)
+      validation.departmentId = ["Choose a department."];
+    if (kind === "projects" && !draft.startDate)
+      validation.startDate = ["Start date is required."];
+    if (kind === "tasks" && !draft.projectId)
+      validation.projectId = ["Choose a project."];
     if (kind === "projects" && draft.endDate && draft.endDate < draft.startDate)
       validation.endDate = ["End date must not be before start date."];
     if (kind === "tags" && draft.color && !/^#[0-9a-f]{6}$/i.test(draft.color))
@@ -317,9 +368,34 @@ function ManagementContent({ kind }: { kind: Kind }) {
       setBusy(false);
     }
   }
-  const filtered = (resource.data || []).filter((item) =>
-    nameOf(kind, item).toLowerCase().includes(query.toLowerCase()),
-  );
+  const filtered = (resource.data || []).filter((item) => {
+    if (!nameOf(kind, item).toLowerCase().includes(query.toLowerCase()))
+      return false;
+    if (
+      "status" in item &&
+      filters.status !== "" &&
+      item.status !== Number(filters.status)
+    )
+      return false;
+    if ("title" in item) {
+      if (filters.priority !== "" && item.priority !== Number(filters.priority))
+        return false;
+      if (filters.projectId && item.projectId !== Number(filters.projectId))
+        return false;
+      if (
+        filters.tagId &&
+        !item.tags.some((t) => t.tagId === Number(filters.tagId))
+      )
+        return false;
+    }
+    if (
+      "taskCount" in item &&
+      filters.departmentId &&
+      item.departmentId !== Number(filters.departmentId)
+    )
+      return false;
+    return true;
+  });
   const pages = Math.max(1, Math.ceil(filtered.length / 10));
   const current = Math.min(page, pages);
   const rows = filtered.slice((current - 1) * 10, current * 10);
@@ -338,16 +414,46 @@ function ManagementContent({ kind }: { kind: Kind }) {
   return (
     <>
       <PageHeading
-        eyebrow="KEEP WORK MOVING"
-        title={`${kind.charAt(0).toUpperCase() + kind.slice(1)} management`}
-        description={`Create, organize, and maintain your ${kind}.`}
+        eyebrow={
+          kind === "tasks"
+            ? "MY TASKS"
+            : kind === "departments"
+              ? "MANAGEMENT"
+              : kind === "projects"
+                ? "MANAGEMENT"
+                : "MANAGEMENT"
+        }
+        title={
+          kind === "tasks"
+            ? "My Tasks"
+            : `${kind.charAt(0).toUpperCase() + kind.slice(1)} management`
+        }
+        description={
+          kind === "tasks"
+            ? "Manage and track work across projects."
+            : `Create, organize, and maintain your ${kind}.`
+        }
         action={
           <button className="button" onClick={() => begin(null)}>
-            <Plus size={16} />
+            <Plus size={14} />
             Create {singular[kind]}
           </button>
         }
       />
+      {kind === "tasks" && !trash && (
+        <Tabs value={view} onValueChange={setView} className="view-tabs">
+          <TabsList aria-label="Task presentation">
+            <TabsTrigger value="board">
+              <Columns3 size={16} />
+              Board
+            </TabsTrigger>
+            <TabsTrigger value="list">
+              <List size={16} />
+              List
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
       <div className="toolbar">
         <Search size={17} color="#87939d" />
         <input
@@ -359,6 +465,89 @@ function ManagementContent({ kind }: { kind: Kind }) {
             setPage(1);
           }}
         />
+        {(kind === "tasks" || kind === "projects") && (
+          <select
+            aria-label="Filter management status"
+            value={filters.status}
+            onChange={(e) => {
+              setFilters((f) => ({ ...f, status: e.target.value }));
+              setPage(1);
+            }}
+          >
+            <option value="">All statuses</option>
+            {(kind === "tasks" ? taskStatuses : projectStatuses).map((s, i) => (
+              <option value={i} key={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        )}
+        {kind === "projects" && (
+          <select
+            aria-label="Filter management department"
+            value={filters.departmentId}
+            onChange={(e) => {
+              setFilters((f) => ({ ...f, departmentId: e.target.value }));
+              setPage(1);
+            }}
+          >
+            <option value="">All departments</option>
+            {departments.data?.map((d) => (
+              <option value={d.departmentId} key={d.departmentId}>
+                {d.departmentName}
+              </option>
+            ))}
+          </select>
+        )}
+        {kind === "tasks" && (
+          <>
+            <select
+              aria-label="Filter management project"
+              value={filters.projectId}
+              onChange={(e) => {
+                setFilters((f) => ({ ...f, projectId: e.target.value }));
+                setPage(1);
+              }}
+            >
+              <option value="">All projects</option>
+              {projects.data?.map((p) => (
+                <option value={p.projectId} key={p.projectId}>
+                  {p.projectName}
+                </option>
+              ))}
+            </select>
+            <select
+              aria-label="Filter management priority"
+              value={filters.priority}
+              onChange={(e) => {
+                setFilters((f) => ({ ...f, priority: e.target.value }));
+                setPage(1);
+              }}
+            >
+              <option value="">All priorities</option>
+              {priorities.map((p, i) => (
+                <option value={i} key={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+            <select
+              aria-label="Filter management tag"
+              value={filters.tagId}
+              onChange={(e) => {
+                setFilters((f) => ({ ...f, tagId: e.target.value }));
+                setPage(1);
+              }}
+            >
+              <option value="">All tags</option>
+              {tags.data?.map((t) => (
+                <option value={t.tagId} key={t.tagId}>
+                  {t.tagName}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
         {kind === "tasks" && (
           <button
             className={`button ${trash ? "" : "secondary"}`}
@@ -372,6 +561,37 @@ function ManagementContent({ kind }: { kind: Kind }) {
           </button>
         )}
       </div>
+      {Object.values(filters).some(Boolean) && (
+        <button
+          className="button secondary clear-filters"
+          onClick={() => {
+            setFilters({
+              status: "",
+              priority: "",
+              projectId: "",
+              tagId: "",
+              departmentId: "",
+            });
+            setPage(1);
+          }}
+        >
+          Clear filters
+        </button>
+      )}
+      {lookupError && (
+        <div className="notice">
+          Filter options could not load.{" "}
+          <button
+            onClick={() => {
+              departments.reload();
+              projects.reload();
+              tags.reload();
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
       {trash && (
         <div className="notice">
           Tasks in trash remain in the database. Restore a task to return it to
@@ -382,10 +602,26 @@ function ManagementContent({ kind }: { kind: Kind }) {
         <ErrorState message={resource.error} retry={resource.reload} />
       ) : resource.loading ? (
         <Loading />
+      ) : kind === "tasks" && view === "board" && !trash ? (
+        <TaskKanban tasks={filtered as Task[]} onChanged={resource.reload} />
       ) : (
         <div className="panel">
           {!rows.length ? (
             <Empty
+              description={
+                query || Object.values(filters).some(Boolean)
+                  ? "Try adjusting your search or filters."
+                  : trash
+                    ? "Deleted tasks will appear here."
+                    : `Create your first ${singular[kind]} to get started.`
+              }
+              action={
+                !trash ? (
+                  <button className="button" onClick={() => begin(null)}>
+                    Create {singular[kind]}
+                  </button>
+                ) : undefined
+              }
               title={
                 query
                   ? "No matching results"
@@ -485,40 +721,49 @@ function ManagementContent({ kind }: { kind: Kind }) {
                               Restore
                             </button>
                           ) : (
-                            <>
-                              <button
-                                className="icon-button"
-                                aria-label={`Edit ${nameOf(kind, item)}`}
-                                onClick={() => begin(item)}
-                              >
-                                <Pencil size={15} />
-                              </button>
-                              {kind === "tasks" && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
                                 <button
                                   className="icon-button"
-                                  aria-label={`Duplicate ${nameOf(kind, item)}`}
-                                  onClick={() => duplicate(item as Task)}
+                                  aria-label={`Actions for ${nameOf(kind, item)}`}
                                 >
-                                  <Copy size={15} />
+                                  <MoreHorizontal size={18} />
                                 </button>
-                              )}
-                              <button
-                                className="icon-button"
-                                aria-label={`Delete ${nameOf(kind, item)}`}
-                                onClick={() => setDeleting(item)}
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent
+                                align="end"
+                                className="atlas-menu"
                               >
-                                <Trash2 size={15} />
-                              </button>
-                              {kind !== "tags" && (
-                                <Link
-                                  className="icon-button"
-                                  aria-label={`View ${nameOf(kind, item)}`}
-                                  href={`/${kind}/${idOf(kind, item)}`}
+                                {kind !== "tags" && (
+                                  <DropdownMenuItem asChild>
+                                    <Link href={`/${kind}/${idOf(kind, item)}`}>
+                                      <ExternalLink size={15} />
+                                      View details
+                                    </Link>
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem onSelect={() => begin(item)}>
+                                  <Pencil size={15} />
+                                  Edit
+                                </DropdownMenuItem>
+                                {kind === "tasks" && (
+                                  <DropdownMenuItem
+                                    onSelect={() => duplicate(item as Task)}
+                                  >
+                                    <Copy size={15} />
+                                    Duplicate
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  onSelect={() => setDeleting(item)}
                                 >
-                                  <ExternalLink size={15} />
-                                </Link>
-                              )}
-                            </>
+                                  <Trash2 size={15} />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           )}
                         </div>
                       </td>
@@ -571,7 +816,7 @@ function ManagementContent({ kind }: { kind: Kind }) {
         ) : lookupLoading ? (
           <Loading />
         ) : (
-          <form onSubmit={save}>
+          <form onSubmit={save} noValidate>
             <div className="form-grid">
               {kind === "departments" && (
                 <>
