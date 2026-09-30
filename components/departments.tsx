@@ -75,7 +75,7 @@ export function Departments() {
                 gap: 16,
                 padding: "16px 20px",
                 borderBottom:
-                  idx < filtered.length - 1 ? "1px solid #edf0f5" : "none",
+                  idx < filtered.length - 1 ? "1px solid var(--line)" : "none",
                 transition: "background 160ms",
               }}
               className="dept-list-row"
@@ -103,7 +103,7 @@ export function Departments() {
                     fontWeight: 600,
                     fontSize: 14,
                     marginBottom: 3,
-                    color: "#121313",
+                    color: "var(--text)",
                   }}
                 >
                   {d.departmentName}
@@ -111,7 +111,7 @@ export function Departments() {
                 <div
                   style={{
                     fontSize: 13,
-                    color: "#6a7589",
+                    color: "var(--muted)",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
@@ -125,7 +125,7 @@ export function Departments() {
               <span
                 style={{
                   fontSize: 12,
-                  color: "#6e7e95",
+                  color: "var(--muted)",
                   whiteSpace: "nowrap",
                   flexShrink: 0,
                 }}
@@ -164,3 +164,4 @@ export function Departments() {
     </>
   );
 }
+
