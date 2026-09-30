@@ -38,3 +38,12 @@ Import this repository as a Next.js project. Set `NEXT_PUBLIC_API_URL=https://YO
 ## Known scope limits
 
 No user accounts, assignees, comments, attachments or historical reports exist in the supplied schema. Those features remain a separate migration phase. Kanban persists status, not manual card order. Reports show current data, not invented historical trends.
+
+## Live deployment
+
+- Production: https://asm-prn-232-fe.vercel.app
+- API: https://asm-prn232-be.onrender.com
+- Set `NEXT_PUBLIC_API_URL=https://asm-prn232-be.onrender.com` on Vercel.
+- Backend CORS origin: `https://asm-prn-232-fe.vercel.app`.
+
+Render Free PostgreSQL expires on October 29, 2026. The backend may take time to wake up after inactivity.
