@@ -82,7 +82,12 @@ export function Calendar() {
         <Loading />
       ) : (
         <>
-          <div className="panel table-wrap">
+          <div
+            className="panel table-wrap"
+            role="region"
+            aria-label="Monthly calendar"
+            tabIndex={0}
+          >
             <div className="calendar">
               {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
                 <div className="calendar-label" key={d}>
