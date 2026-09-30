@@ -30,8 +30,15 @@ import {
   DropdownMenuSeparator,
 } from "@/components/primitives/dropdown-menu";
 
+import { toast } from "sonner";
+import {
+  WorkspaceMenu,
+  defaultWorkspace,
+  WorkspacePreferences,
+} from "./workspace-menu";
+
 const sections = [
-  { title: "Dashboard", links: [["/" , "Overview", LayoutDashboard]] },
+  { title: "Dashboard", links: [["/", "Overview", LayoutDashboard]] },
   {
     title: "Workspace",
     links: [
@@ -58,11 +65,55 @@ const sections = [
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [preferences, setPreferences] =
+    useState<WorkspacePreferences>(defaultWorkspace);
+  const collapsed = preferences.collapsed;
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("tasktrack-workspace") || "null",
+      );
+      if (saved)
+        setPreferences({
+          name:
+            typeof saved.name === "string" && saved.name.trim()
+              ? saved.name.slice(0, 48)
+              : defaultWorkspace.name,
+          description:
+            typeof saved.description === "string"
+              ? saved.description.slice(0, 160)
+              : defaultWorkspace.description,
+          icon: ["TT", "🚀", "🌿", "⭐", "🎯", "💼"].includes(saved.icon)
+            ? saved.icon
+            : "TT",
+          dark: saved.dark === true,
+          collapsed: saved.collapsed === true,
+        });
+    } catch {
+      /* Unavailable or invalid storage uses defaults. */
+    }
+  }, []);
+  useEffect(() => {
+    document.documentElement.dataset.theme = preferences.dark
+      ? "dark"
+      : "light";
+  }, [preferences.dark]);
+  function updatePreferences(next: WorkspacePreferences) {
+    setPreferences(next);
+    try {
+      localStorage.setItem("tasktrack-workspace", JSON.stringify(next));
+    } catch {
+      toast.error(
+        "Preferences apply for this visit only: browser storage is unavailable.",
+      );
+    }
+  }
 
   useEffect(() => {
     const m = window.matchMedia("(min-width: 761px)");
-    const close = () => { if (m.matches) setOpen(false); };
+    const close = () => {
+      if (m.matches) setOpen(false);
+    };
     m.addEventListener("change", close);
     return () => m.removeEventListener("change", close);
   }, []);
@@ -86,9 +137,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </Link>
 
       <div className="workspace-label">
-        <span className="workspace-avatar">T</span>
+        <span className="workspace-avatar">{preferences.icon}</span>
         <div>
-          <strong style={{ fontSize: 12, fontWeight: 600 }}>Team workspace</strong>
+          <strong style={{ fontSize: 12, fontWeight: 600 }}>
+            {preferences.name}
+          </strong>
           <small>Projects &amp; tasks</small>
         </div>
       </div>
@@ -114,7 +167,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
       <div className="sidebar-footer">
         <span className="tiny-label">TaskTrack</span>
-        <p>Manage projects,<br />priorities &amp; teams.</p>
+        <p>
+          Manage projects,
+          <br />
+          priorities &amp; teams.
+        </p>
       </div>
     </>
   );
@@ -128,14 +185,18 @@ export function Shell({ children }: { children: React.ReactNode }) {
           className="collapse-button"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-expanded={!collapsed}
-          onClick={() => setCollapsed((v) => !v)}
+          onClick={() =>
+            updatePreferences({ ...preferences, collapsed: !collapsed })
+          }
         >
           {collapsed ? (
             <PanelLeftOpen size={16} strokeWidth={1.7} />
           ) : (
             <PanelLeftClose size={16} strokeWidth={1.7} />
           )}
-          <span className="nav-label" style={{ fontSize: 12 }}>Collapse</span>
+          <span className="nav-label" style={{ fontSize: 12 }}>
+            Collapse
+          </span>
         </button>
       </aside>
 
@@ -171,7 +232,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <div className="main-shell">
         <header className="topbar">
           <form className="global-search" action="/search">
-            <Search size={15} strokeWidth={1.8} style={{ color: "#9aabbb", flexShrink: 0 }} />
+            <Search
+              size={15}
+              strokeWidth={1.8}
+              style={{ color: "#9aabbb", flexShrink: 0 }}
+            />
             <input
               name="title"
               aria-label="Search workspace"
@@ -208,17 +273,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Link
-              href="/departments"
-              className="workspace-profile"
-              aria-label="Browse team workspace"
-            >
-              <span className="avatar">TT</span>
-              <span>
-                <strong>Team workspace</strong>
-                <small>Public workspace</small>
-              </span>
-            </Link>
+            <WorkspaceMenu value={preferences} update={updatePreferences} />
           </div>
         </header>
 
