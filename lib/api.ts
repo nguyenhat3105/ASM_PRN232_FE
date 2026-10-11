@@ -20,6 +20,9 @@ export async function api<T>(
       ...options,
       headers: {
         ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...(typeof window !== "undefined" && localStorage.getItem("tasktrack-token")
+          ? { Authorization: `Bearer ${localStorage.getItem("tasktrack-token")}` }
+          : {}),
         ...options.headers,
       },
       cache: "no-store",
@@ -33,6 +36,11 @@ export async function api<T>(
   }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
+    if (response.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("tasktrack-token");
+      localStorage.removeItem("tasktrack-account");
+      if (location.pathname.startsWith("/admin")) location.assign("/login");
+    }
     throw new ApiError(
       response.status,
       body.detail || body.title || "The request failed.",

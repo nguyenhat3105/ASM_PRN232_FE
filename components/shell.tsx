@@ -36,6 +36,7 @@ import {
   defaultWorkspace,
   WorkspacePreferences,
 } from "./workspace-menu";
+import { useAuth } from "@/lib/auth";
 
 const sections = [
   { title: "Dashboard", links: [["/", "Overview", LayoutDashboard]] },
@@ -54,15 +55,16 @@ const sections = [
   {
     title: "Management",
     links: [
-      ["/departments/manage", "Departments", Building2],
-      ["/projects/manage", "Projects", FolderKanban],
-      ["/tasks/manage", "Tasks", ListTodo],
-      ["/tags/manage", "Tags", Tags],
+      ["/admin/departments", "Departments", Building2],
+      ["/admin/projects", "Projects", FolderKanban],
+      ["/admin/tasks", "Tasks", ListTodo],
+      ["/admin/tags", "Tags", Tags],
     ],
   },
 ] as const;
 
 export function Shell({ children }: { children: React.ReactNode }) {
+  const { account, logout } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [preferences, setPreferences] =
@@ -146,7 +148,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {sections.map((s) => (
+      {sections.filter((s) => s.title !== "Management" || account).map((s) => (
         <nav key={s.title} aria-label={s.title}>
           <p className="nav-heading">{s.title}</p>
           {s.links.map(([href, label, Icon]) => (
@@ -166,6 +168,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       ))}
 
       <div className="sidebar-footer">
+        {account ? <><strong>{account.fullName}</strong><button className="link-button" onClick={() => { logout(); location.assign("/"); }}>Logout</button></> : <p><Link href="/login">Login</Link> · <Link href="/register">Register</Link></p>}
         <span className="tiny-label">TaskTrack</span>
         <p>
           Manage projects,
@@ -261,10 +264,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 <DropdownMenuLabel>Create new</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {[
-                  ["/tasks/manage", "Task"],
-                  ["/projects/manage", "Project"],
-                  ["/departments/manage", "Department"],
-                  ["/tags/manage", "Tag"],
+                  ["/admin/tasks", "Task"],
+                  ["/admin/projects", "Project"],
+                  ["/admin/departments", "Department"],
+                  ["/admin/tags", "Tag"],
                 ].map(([path, label]) => (
                   <DropdownMenuItem asChild key={path}>
                     <Link href={`${path}?create=1`}>{label}</Link>

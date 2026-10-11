@@ -1,4 +1,2 @@
-import { Management } from "@/components/management";
-export default function Page() {
-  return <Management kind="tasks" />;
-}
+import { redirect } from "next/navigation";
+export default function Page() { redirect("/admin/tasks"); }

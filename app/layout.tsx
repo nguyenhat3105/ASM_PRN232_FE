@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { Shell } from "@/components/shell";
+import { AuthProvider } from "@/lib/auth";
 import "./globals.css";
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
@@ -22,7 +23,7 @@ export default function RootLayout({
         <a className="skip-link" href="#page-content">
           Skip to content
         </a>
-        <Shell>{children}</Shell>
+        <AuthProvider><Shell>{children}</Shell></AuthProvider>
         <Toaster position="bottom-right" richColors closeButton />
       </body>
     </html>
