@@ -46,4 +46,10 @@ No user accounts, assignees, comments, attachments or historical reports exist i
 - Set `NEXT_PUBLIC_API_URL=https://asm-prn232-be.onrender.com` on Vercel.
 - Backend CORS origin: `https://asm-prn-232-fe.vercel.app`.
 
+## Assignment 2 authentication
+
+The public site has `/register` and `/login`. Successful login stores the backend JWT in browser storage and redirects to `/admin`. All management pages now live under `/admin/departments`, `/admin/projects`, `/admin/tasks`, and `/admin/tags`; unauthenticated visitors are redirected to login. `/admin/accounts` is available only to Admin users.
+
+Set `NEXT_PUBLIC_API_URL` to the Render API base URL. Protected API calls attach `Authorization: Bearer <token>` automatically. A 401 response clears the expired session and redirects an admin route to `/login`.
+
 Render Free PostgreSQL expires on October 29, 2026. The backend may take time to wake up after inactivity.
