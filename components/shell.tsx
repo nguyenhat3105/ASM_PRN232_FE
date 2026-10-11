@@ -9,6 +9,7 @@ import {
   FolderKanban,
   ListTodo,
   Tags,
+  Users,
   Search,
   Columns3,
   CalendarDays,
@@ -168,6 +169,22 @@ export function Shell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
         ))}
+
+      {account?.role === 1 && (
+        <nav aria-label="Administration">
+          <p className="nav-heading">Administration</p>
+          <Link
+            href="/admin/accounts"
+            title={collapsed ? "Account management" : undefined}
+            aria-current={active("/admin/accounts") ? "page" : undefined}
+            onClick={() => setOpen(false)}
+            className={`nav-link ${active("/admin/accounts") ? "active" : ""}`}
+          >
+            <Users size={16} strokeWidth={1.7} />
+            <span className="nav-label">Account management</span>
+          </Link>
+        </nav>
+      )}
 
       <div className="sidebar-footer">
         {account ? (
