@@ -148,27 +148,47 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {sections.filter((s) => s.title !== "Management" || account).map((s) => (
-        <nav key={s.title} aria-label={s.title}>
-          <p className="nav-heading">{s.title}</p>
-          {s.links.map(([href, label, Icon]) => (
-            <Link
-              key={href}
-              href={href}
-              title={collapsed ? label : undefined}
-              aria-current={active(href) ? "page" : undefined}
-              onClick={() => setOpen(false)}
-              className={`nav-link ${active(href) ? "active" : ""}`}
-            >
-              <Icon size={16} strokeWidth={1.7} />
-              <span className="nav-label">{label}</span>
-            </Link>
-          ))}
-        </nav>
-      ))}
+      {sections
+        .filter((s) => s.title !== "Management" || account)
+        .map((s) => (
+          <nav key={s.title} aria-label={s.title}>
+            <p className="nav-heading">{s.title}</p>
+            {s.links.map(([href, label, Icon]) => (
+              <Link
+                key={href}
+                href={href}
+                title={collapsed ? label : undefined}
+                aria-current={active(href) ? "page" : undefined}
+                onClick={() => setOpen(false)}
+                className={`nav-link ${active(href) ? "active" : ""}`}
+              >
+                <Icon size={16} strokeWidth={1.7} />
+                <span className="nav-label">{label}</span>
+              </Link>
+            ))}
+          </nav>
+        ))}
 
       <div className="sidebar-footer">
-        {account ? <><strong>{account.fullName}</strong><button className="link-button" onClick={() => { logout(); location.assign("/"); }}>Logout</button></> : <p><Link href="/login">Login</Link> · <Link href="/register">Register</Link></p>}
+        {account ? (
+          <>
+            <strong>{account.fullName}</strong>
+            <button
+              className="link-button"
+              onClick={() => {
+                logout();
+                location.assign("/");
+              }}
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <p>
+            <Link href="/login">Login</Link> ·{" "}
+            <Link href="/register">Register</Link>
+          </p>
+        )}
         <span className="tiny-label">TaskTrack</span>
         <p>
           Manage projects,
@@ -249,32 +269,38 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </form>
 
           <div className="topbar-right">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className="button topbar-create"
-                  aria-label="Create new record"
-                >
-                  <Plus size={15} />
-                  <span>Create new</span>
-                  <ChevronDown size={12} strokeWidth={2} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="atlas-menu">
-                <DropdownMenuLabel>Create new</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {[
-                  ["/admin/tasks", "Task"],
-                  ["/admin/projects", "Project"],
-                  ["/admin/departments", "Department"],
-                  ["/admin/tags", "Tag"],
-                ].map(([path, label]) => (
-                  <DropdownMenuItem asChild key={path}>
-                    <Link href={`${path}?create=1`}>{label}</Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {account ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="button topbar-create"
+                    aria-label="Create new record"
+                  >
+                    <Plus size={15} />
+                    <span>Create new</span>
+                    <ChevronDown size={12} strokeWidth={2} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="atlas-menu">
+                  <DropdownMenuLabel>Create new</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {[
+                    ["/admin/tasks", "Task"],
+                    ["/admin/projects", "Project"],
+                    ["/admin/departments", "Department"],
+                    ["/admin/tags", "Tag"],
+                  ].map(([path, label]) => (
+                    <DropdownMenuItem asChild key={path}>
+                      <Link href={`${path}?create=1`}>{label}</Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link className="button secondary topbar-create" href="/login">
+                Sign in to manage
+              </Link>
+            )}
 
             <WorkspaceMenu value={preferences} update={updatePreferences} />
           </div>

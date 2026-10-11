@@ -5,6 +5,7 @@ import { Plus, Search } from "lucide-react";
 import { useResource } from "@/lib/use-resource";
 import { Department, Project, projectStatuses, dateLabel } from "@/lib/types";
 import { PageHeading, Loading, ErrorState, Empty, Badge } from "./ui";
+import { useAuth } from "@/lib/auth";
 
 export function ProjectTable({ projects }: { projects: Project[] }) {
   if (!projects.length) {
@@ -70,6 +71,7 @@ export function ProjectTable({ projects }: { projects: Project[] }) {
 }
 
 export function Projects() {
+  const { account } = useAuth();
   const [name, setName] = useState(""),
     [status, setStatus] = useState(""),
     [department, setDepartment] = useState("");
@@ -91,10 +93,12 @@ export function Projects() {
         title="Projects"
         description="Track projects and progress across departments."
         action={
-          <Link className="button" href="/projects/manage?create=1">
-            <Plus size={14} />
-            New project
-          </Link>
+          account ? (
+            <Link className="button" href="/admin/projects?create=1">
+              <Plus size={14} />
+              New project
+            </Link>
+          ) : undefined
         }
       />
 
@@ -158,10 +162,12 @@ export function Projects() {
               title="No projects found"
               description="Try another filter or create your first project."
               action={
-                <Link className="button" href="/projects/manage?create=1">
-                  <Plus size={14} />
-                  Create project
-                </Link>
+                account ? (
+                  <Link className="button" href="/admin/projects?create=1">
+                    <Plus size={14} />
+                    Create project
+                  </Link>
+                ) : undefined
               }
             />
           )}

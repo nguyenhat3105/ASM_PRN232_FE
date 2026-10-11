@@ -9,6 +9,7 @@ import { useResource } from "@/lib/use-resource";
 import { Department, Project, Task, dateLabel, overdue } from "@/lib/types";
 import { Badge, TagChip, PageHeading, Loading, ErrorState, Empty } from "./ui";
 import { TaskTable } from "./task-table";
+import { useAuth } from "@/lib/auth";
 
 export function Detail({
   kind,
@@ -18,6 +19,7 @@ export function Detail({
   id: string;
 }) {
   const r = useResource<Department | Project | Task>(`/${kind}/${id}`);
+  const { account } = useAuth();
   const [status, setStatus] = useState("all");
 
   if (r.error) return <ErrorState message={r.error} retry={r.reload} />;
@@ -33,7 +35,11 @@ export function Detail({
 
   // Singular form for breadcrumb / edit label
   const singular =
-    kind === "departments" ? "Department" : kind === "projects" ? "Project" : "Task";
+    kind === "departments"
+      ? "Department"
+      : kind === "projects"
+        ? "Project"
+        : "Task";
 
   return (
     <>
@@ -63,13 +69,15 @@ export function Detail({
               : "The teams and projects moving work forward."
         }
         action={
-          <Link
-            className="button secondary"
-            href={`/${kind}/manage?edit=${id}`}
-          >
-            <Pencil size={13} />
-            Edit {singular.toLowerCase()}
-          </Link>
+          account ? (
+            <Link
+              className="button secondary"
+              href={`/admin/${kind}?edit=${id}`}
+            >
+              <Pencil size={13} />
+              Edit {singular.toLowerCase()}
+            </Link>
+          ) : undefined
         }
       />
 
@@ -90,16 +98,17 @@ export function Detail({
           {/* Projects section */}
           <div className="section-heading">
             <h2>
-              Projects{" "}
-              <span className="count-label">{d.projectCount}</span>
+              Projects <span className="count-label">{d.projectCount}</span>
             </h2>
-            <Link
-              className="button"
-              href={`/projects/manage?create=1&departmentId=${d.departmentId}`}
-            >
-              <Plus size={14} />
-              New project
-            </Link>
+            {account && (
+              <Link
+                className="button"
+                href={`/admin/projects?create=1&departmentId=${d.departmentId}`}
+              >
+                <Plus size={14} />
+                New project
+              </Link>
+            )}
           </div>
           <div className="panel">
             {d.projects?.length ? (
@@ -109,13 +118,15 @@ export function Detail({
                 title="No projects yet"
                 description="Create the first project for this department."
                 action={
-                  <Link
-                    href={`/projects/manage?create=1&departmentId=${d.departmentId}`}
-                    className="button"
-                  >
-                    <Plus size={14} />
-                    Create project
-                  </Link>
+                  account ? (
+                    <Link
+                      href={`/admin/projects?create=1&departmentId=${d.departmentId}`}
+                      className="button"
+                    >
+                      <Plus size={14} />
+                      Create project
+                    </Link>
+                  ) : undefined
                 }
               />
             )}
@@ -231,13 +242,15 @@ export function Detail({
             <>
               <div className="section-heading">
                 <h2>Project tasks</h2>
-                <Link
-                  className="button"
-                  href={`/tasks/manage?create=1&projectId=${d.projectId}`}
-                >
-                  <Plus size={14} />
-                  Add task
-                </Link>
+                {account && (
+                  <Link
+                    className="button"
+                    href={`/admin/tasks?create=1&projectId=${d.projectId}`}
+                  >
+                    <Plus size={14} />
+                    Add task
+                  </Link>
+                )}
               </div>
               <Tabs
                 value={status}

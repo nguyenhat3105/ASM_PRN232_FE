@@ -12,15 +12,17 @@ const COLUMN_COLORS = ["#8493ae", "#355ae2", "#2d7262", "#85688b"];
 export function TaskKanban({
   tasks,
   onChanged,
+  editable = true,
 }: {
   tasks: Task[];
-  onChanged: () => void;
+  onChanged?: () => void;
+  editable?: boolean;
 }) {
   const [busy, setBusy] = useState(false),
     [drag, setDrag] = useState<number | null>(null);
 
   async function move(task: Task, status: number) {
-    if (busy || task.status === status) return;
+    if (!editable || busy || task.status === status) return;
     setBusy(true);
     try {
       await api(`/tasks/${task.taskId}/status`, {
@@ -28,7 +30,7 @@ export function TaskKanban({
         body: JSON.stringify({ status }),
       });
       toast.success(`Task moved to ${taskStatuses[status]}`);
-      onChanged();
+      onChanged?.();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not move task.");
     } finally {
@@ -45,19 +47,29 @@ export function TaskKanban({
           <section
             className={`board-column ${drag === index ? "drag-over" : ""}`}
             key={status}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDrag(index);
-            }}
-            onDragLeave={() => setDrag(null)}
-            onDrop={(e) => {
-              e.preventDefault();
-              const task = tasks.find(
-                (t) => t.taskId === Number(e.dataTransfer.getData("text/plain")),
-              );
-              setDrag(null);
-              if (task) move(task, index);
-            }}
+            onDragOver={
+              editable
+                ? (e) => {
+                    e.preventDefault();
+                    setDrag(index);
+                  }
+                : undefined
+            }
+            onDragLeave={editable ? () => setDrag(null) : undefined}
+            onDrop={
+              editable
+                ? (e) => {
+                    e.preventDefault();
+                    const task = tasks.find(
+                      (t) =>
+                        t.taskId ===
+                        Number(e.dataTransfer.getData("text/plain")),
+                    );
+                    setDrag(null);
+                    if (task) move(task, index);
+                  }
+                : undefined
+            }
           >
             {/* Column header */}
             <h2>
@@ -75,11 +87,14 @@ export function TaskKanban({
               <article
                 className="board-card"
                 key={t.taskId}
-                draggable={!busy}
-                onDragStart={(e) =>
-                  e.dataTransfer.setData("text/plain", String(t.taskId))
+                draggable={editable && !busy}
+                onDragStart={
+                  editable
+                    ? (e) =>
+                        e.dataTransfer.setData("text/plain", String(t.taskId))
+                    : undefined
                 }
-                onDragEnd={() => setDrag(null)}
+                onDragEnd={editable ? () => setDrag(null) : undefined}
               >
                 {/* Top row: priority badge */}
                 <div className="card-meta">
@@ -121,26 +136,25 @@ export function TaskKanban({
                   </div>
                 )}
 
-                {/* Status change — compact select */}
-                <select
-                  className="board-status-select"
-                  aria-label={`Move "${t.title}" to a different status`}
-                  value={t.status}
-                  disabled={busy}
-                  onChange={(e) => move(t, Number(e.target.value))}
-                >
-                  {taskStatuses.map((s, i) => (
-                    <option key={s} value={i}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
+                {editable && (
+                  <select
+                    className="board-status-select"
+                    aria-label={`Move "${t.title}" to a different status`}
+                    value={t.status}
+                    disabled={busy}
+                    onChange={(e) => move(t, Number(e.target.value))}
+                  >
+                    {taskStatuses.map((s, i) => (
+                      <option key={s} value={i}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </article>
             ))}
 
-            {colTasks.length === 0 && (
-              <p className="column-empty">No tasks</p>
-            )}
+            {colTasks.length === 0 && <p className="column-empty">No tasks</p>}
           </section>
         );
       })}

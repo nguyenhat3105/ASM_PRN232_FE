@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { Plus } from "lucide-react";
 import { useResource } from "@/lib/use-resource";
 import { Task, Project } from "@/lib/types";
 import { PageHeading, Loading, ErrorState } from "./ui";
@@ -15,13 +14,7 @@ export function Board() {
       <PageHeading
         eyebrow="WORKSPACE"
         title="Task board"
-        description="Move work forward. Drag a task or use its status menu."
-        action={
-          <Link className="button" href="/tasks/manage?create=1">
-            <Plus size={14} />
-            Create task
-          </Link>
-        }
+        description="Browse work by status. Sign in to update a task."
       />
       <div className="toolbar">
         <select
@@ -36,8 +29,8 @@ export function Board() {
             </option>
           ))}
         </select>
-        <Link className="button secondary" href="/tasks/manage">
-          Open list view
+        <Link className="button secondary" href="/tasks">
+          Open task list
         </Link>
       </div>
       {projects.error && (
@@ -51,7 +44,7 @@ export function Board() {
       ) : tasks.loading ? (
         <Loading variant="cards" />
       ) : (
-        <TaskKanban tasks={tasks.data || []} onChanged={tasks.reload} />
+        <TaskKanban tasks={tasks.data || []} editable={false} />
       )}
     </>
   );

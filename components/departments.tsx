@@ -5,9 +5,11 @@ import { Building2, ArrowUpRight, Plus, Search } from "lucide-react";
 import { useResource } from "@/lib/use-resource";
 import { Department } from "@/lib/types";
 import { PageHeading, Loading, ErrorState, Empty } from "./ui";
+import { useAuth } from "@/lib/auth";
 
 export function Departments() {
   const r = useResource<Department[]>("/departments");
+  const { account } = useAuth();
   const [query, setQuery] = useState("");
   const filtered = r.data?.filter((d) =>
     d.departmentName.toLowerCase().includes(query.toLowerCase()),
@@ -20,10 +22,12 @@ export function Departments() {
         title="Departments"
         description="Find your teams and see what they are building."
         action={
-          <Link href="/departments/manage?create=1" className="button">
-            <Plus size={14} />
-            New department
-          </Link>
+          account ? (
+            <Link href="/admin/departments?create=1" className="button">
+              <Plus size={14} />
+              New department
+            </Link>
+          ) : undefined
         }
       />
 
@@ -36,9 +40,11 @@ export function Departments() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <Link href="/departments/manage" className="button secondary">
-          Manage
-        </Link>
+        {account && (
+          <Link href="/admin/departments" className="button secondary">
+            Manage
+          </Link>
+        )}
       </div>
 
       {r.error ? (
@@ -54,8 +60,8 @@ export function Departments() {
               : "Create your first department to get started."
           }
           action={
-            !query ? (
-              <Link href="/departments/manage?create=1" className="button">
+            !query && account ? (
+              <Link href="/admin/departments?create=1" className="button">
                 <Plus size={14} />
                 Create department
               </Link>
@@ -130,8 +136,7 @@ export function Departments() {
                   flexShrink: 0,
                 }}
               >
-                {d.projectCount}{" "}
-                {d.projectCount === 1 ? "project" : "projects"}
+                {d.projectCount} {d.projectCount === 1 ? "project" : "projects"}
               </span>
 
               {/* Status badge */}
@@ -164,4 +169,3 @@ export function Departments() {
     </>
   );
 }
-
