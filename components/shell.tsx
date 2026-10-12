@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   LayoutDashboard,
@@ -51,15 +52,6 @@ const sections = [
       ["/board", "Board", Columns3],
       ["/calendar", "Calendar", CalendarDays],
       ["/reports", "Reports", ChartNoAxesCombined],
-    ],
-  },
-  {
-    title: "Management",
-    links: [
-      ["/admin/departments", "Departments", Building2],
-      ["/admin/projects", "Projects", FolderKanban],
-      ["/admin/tasks", "Tasks", ListTodo],
-      ["/admin/tags", "Tags", Tags],
     ],
   },
 ] as const;
@@ -149,41 +141,32 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {sections
-        .filter((s) => s.title !== "Management" || account)
-        .map((s) => (
-          <nav key={s.title} aria-label={s.title}>
-            <p className="nav-heading">{s.title}</p>
-            {s.links.map(([href, label, Icon]) => (
-              <Link
-                key={href}
-                href={href}
-                title={collapsed ? label : undefined}
-                aria-current={active(href) ? "page" : undefined}
-                onClick={() => setOpen(false)}
-                className={`nav-link ${active(href) ? "active" : ""}`}
-              >
-                <Icon size={16} strokeWidth={1.7} />
-                <span className="nav-label">{label}</span>
-              </Link>
-            ))}
-          </nav>
-        ))}
-
-      {account?.role === 1 && (
-        <nav aria-label="Administration">
-          <p className="nav-heading">Administration</p>
-          <Link
-            href="/admin/accounts"
-            title={collapsed ? "Account management" : undefined}
-            aria-current={active("/admin/accounts") ? "page" : undefined}
-            onClick={() => setOpen(false)}
-            className={`nav-link ${active("/admin/accounts") ? "active" : ""}`}
-          >
-            <Users size={16} strokeWidth={1.7} />
-            <span className="nav-label">Account management</span>
-          </Link>
+      {sections.map((s) => (
+        <nav key={s.title} aria-label={s.title}>
+          <p className="nav-heading">{s.title}</p>
+          {s.links.map(([href, label, Icon]) => (
+            <Link
+              key={href}
+              href={href}
+              title={collapsed ? label : undefined}
+              aria-current={active(href) ? "page" : undefined}
+              onClick={() => setOpen(false)}
+              className={`nav-link ${active(href) ? "active" : ""}`}
+            >
+              <Icon size={16} strokeWidth={1.7} />
+              <span className="nav-label">{label}</span>
+            </Link>
+          ))}
         </nav>
+      ))}
+
+      {account && (
+        <AdminWorkspaceNavigation
+          active={active}
+          collapsed={collapsed}
+          isAdministrator={account.role === 1}
+          onNavigate={() => setOpen(false)}
+        />
       )}
 
       <div className="sidebar-footer">
@@ -221,7 +204,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""}`}>
-      {/* Desktop sidebar */}
       <aside className="sidebar desktop-sidebar">
         {navigation}
         <button
@@ -243,7 +225,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </button>
       </aside>
 
-      {/* Mobile drawer */}
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Trigger
           className="mobile-menu icon-button"
@@ -271,7 +252,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </Dialog.Portal>
       </Dialog.Root>
 
-      {/* Main content area */}
       <div className="main-shell">
         <header className="topbar">
           <form className="global-search" action="/search">
@@ -334,5 +314,56 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </footer>
       </div>
     </div>
+  );
+}
+
+function AdminWorkspaceNavigation({
+  active,
+  collapsed,
+  isAdministrator,
+  onNavigate,
+}: {
+  active: (href: string) => boolean;
+  collapsed: boolean;
+  isAdministrator: boolean;
+  onNavigate: () => void;
+}) {
+  const links: { href: string; label: string; Icon: LucideIcon }[] = [
+    { href: "/admin", label: "Admin dashboard", Icon: LayoutDashboard },
+    {
+      href: "/admin/departments",
+      label: "Manage departments",
+      Icon: Building2,
+    },
+    { href: "/admin/projects", label: "Manage projects", Icon: FolderKanban },
+    { href: "/admin/tasks", label: "Manage tasks", Icon: ListTodo },
+    { href: "/admin/tags", label: "Manage tags", Icon: Tags },
+  ];
+
+  if (isAdministrator) {
+    links.push({
+      href: "/admin/accounts",
+      label: "Account management",
+      Icon: Users,
+    });
+  }
+
+  return (
+    <nav aria-label="Admin workspace">
+      <p className="nav-heading">Admin workspace</p>
+      {links.map(({ href, label, Icon }) => (
+        <Link
+          key={href}
+          href={href}
+          title={collapsed ? label : undefined}
+          aria-current={active(href) ? "page" : undefined}
+          onClick={onNavigate}
+          className={`nav-link ${active(href) ? "active" : ""}`}
+        >
+          <Icon size={16} strokeWidth={1.7} />
+          <span className="nav-label">{label}</span>
+        </Link>
+      ))}
+    </nav>
   );
 }
