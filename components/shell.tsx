@@ -190,6 +190,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
         {account ? (
           <>
             <strong>{account.fullName}</strong>
+            <span className="tiny-label">
+              {account.role === 1 ? "Administrator" : "Staff"}
+            </span>
             <button
               className="link-button"
               onClick={() => {
