@@ -826,3 +826,160 @@ html[data-theme="dark"] .admin-dashboard__count {
   background: #293a5d;
   color: #c9d5ff;
 }
+
+/* ────────────────────────────────────────────────────
+   SIDEBAR ACCOUNT CARD
+──────────────────────────────────────────────────── */
+.sidebar-footer {
+  padding: 12px 0 0;
+}
+
+.sidebar-account {
+  padding: 10px;
+  border: 1px solid #dfe6f2;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #ffffff, #f7f9fd);
+  box-shadow: 0 5px 16px rgba(37, 56, 92, 0.06);
+}
+
+.sidebar-account__profile {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 9px;
+}
+
+.sidebar-account__avatar {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  flex: 0 0 35px;
+  place-items: center;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #173bd8, #5876ed);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  box-shadow: 0 4px 10px rgba(31, 66, 204, 0.2);
+}
+
+.sidebar-account__details {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-account__details strong {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: #253149;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-account__role {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #edf1f7;
+  color: #66748b;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.65px;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.sidebar-account__role.is-admin {
+  background: #e8edff;
+  color: #3454bd;
+}
+
+.sidebar-account__logout {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 7px 9px;
+  border: 1px solid #dce3ef;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #617087;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sidebar-account__logout:hover {
+  border-color: #f1c7cd;
+  background: #fff5f6;
+  color: #b43a4b;
+}
+
+.sidebar-account--guest > strong {
+  display: block;
+  color: #253149;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.sidebar-account--guest > p {
+  margin: 4px 0 10px;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.sidebar-account__guest-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.sidebar-account__guest-actions a {
+  padding: 6px;
+  border: 1px solid #dce3ef;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #4b5d79;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.sidebar-account__guest-actions a:first-child {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .sidebar-account,
+html[data-theme="dark"] .sidebar-account__logout,
+html[data-theme="dark"] .sidebar-account__guest-actions a {
+  border-color: var(--line);
+  background: var(--surface);
+}
+
+html[data-theme="dark"] .sidebar-account__details strong,
+html[data-theme="dark"] .sidebar-account--guest > strong {
+  color: var(--text);
+}
+
+html[data-theme="dark"] .sidebar-account__logout {
+  color: var(--muted);
+}
+
+html[data-theme="dark"] .sidebar-account__logout:hover {
+  border-color: #7d4050;
+  background: #3a2730;
+  color: #ffb5c0;
+}

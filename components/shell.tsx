@@ -20,6 +20,7 @@ import {
   ChartNoAxesCombined,
   Plus,
   ChevronDown,
+  LogOut,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
@@ -63,6 +64,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const [preferences, setPreferences] =
     useState<WorkspacePreferences>(defaultWorkspace);
   const collapsed = preferences.collapsed;
+  const accountInitials = account?.fullName
+    .trim()
+    .split(/\s+/)
+    .slice(-2)
+    .map((part) => part.charAt(0))
+    .join("")
+    .toUpperCase();
   useEffect(() => {
     try {
       const saved = JSON.parse(
@@ -171,33 +179,43 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
       <div className="sidebar-footer">
         {account ? (
-          <>
-            <strong>{account.fullName}</strong>
-            <span className="tiny-label">
-              {account.role === 1 ? "Administrator" : "Staff"}
-            </span>
+          <div className="sidebar-account">
+            <div className="sidebar-account__profile">
+              <span className="sidebar-account__avatar" aria-hidden="true">
+                {accountInitials || "TT"}
+              </span>
+              <span className="sidebar-account__details">
+                <strong title={account.fullName}>{account.fullName}</strong>
+                <span
+                  className={`sidebar-account__role ${
+                    account.role === 1 ? "is-admin" : ""
+                  }`}
+                >
+                  {account.role === 1 ? "Administrator" : "Staff member"}
+                </span>
+              </span>
+            </div>
             <button
-              className="link-button"
+              className="sidebar-account__logout"
               onClick={() => {
                 logout();
                 location.assign("/");
               }}
             >
-              Logout
+              <LogOut size={15} strokeWidth={1.8} />
+              <span>Sign out</span>
             </button>
-          </>
+          </div>
         ) : (
-          <p>
-            <Link href="/login">Login</Link> ·{" "}
-            <Link href="/register">Register</Link>
-          </p>
+          <div className="sidebar-account sidebar-account--guest">
+            <strong>Start managing your workspace</strong>
+            <p>Sign in to create and update records.</p>
+            <div className="sidebar-account__guest-actions">
+              <Link href="/login">Sign in</Link>
+              <Link href="/register">Register</Link>
+            </div>
+          </div>
         )}
-        <span className="tiny-label">TaskTrack</span>
-        <p>
-          Manage projects,
-          <br />
-          priorities &amp; teams.
-        </p>
       </div>
     </>
   );
